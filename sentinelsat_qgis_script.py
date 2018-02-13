@@ -25,6 +25,8 @@ import logging
 
 logger = logging.getLogger('sentinelsat')
 
+logger_set = False  # only set once
+
 _PROGRESS = progress  # from magic qgis namespace
 
 
@@ -106,12 +108,16 @@ class ProgressBar(object):
 
 
 def _set_logger_handler(qgis_progress, level='INFO'):
+    global logger_set
+    if logger_set:
+        return
     logger.setLevel(level)
     h = ProgressHandler(qgis_progress)
     h.setLevel(level)
     fmt = logging.Formatter('%(message)s')
     h.setFormatter(fmt)
     logger.addHandler(h)
+    logger_set = True
 
 
 def _load_to_canvas(path):
