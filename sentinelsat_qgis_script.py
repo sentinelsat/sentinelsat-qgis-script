@@ -90,18 +90,19 @@ class ProgressHandler(logging.StreamHandler):
 
 
 class ProgressBar(object):
-    # TODO: Implement QGIS progress bar
 
-    def __init__(self, total, *args, **kwargs):
-        self.value = 0.0
+    def __init__(self, total, initial=0.0, *args, **kwargs):
         self.qgis_progress = _PROGRESS
+        self.value = initial
         self.total = total
-        self.qgis_progress.setPercentage(0)
+        self.qgis_progress.setPercentage(self._get_percent())
+
+    def _get_percent(self):
+        return float(self.value) / self.total * 100
 
     def update(self, increment):
         self.value += increment
-        self.percent = float(self.value) / self.total * 100
-        self.qgis_progress.setPercentage(self.percent)
+        self.qgis_progress.setPercentage(self._get_percent())
 
     def close(self):
         pass
