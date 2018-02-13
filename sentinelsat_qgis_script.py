@@ -7,16 +7,16 @@
 ##ParameterString|START|Start date (YYYYMMDD)|NOW-1DAY|False|True
 ##ParameterString|END|End date (YYYYMMDD)|NOW|False|True
 ##ParameterExtent|EXTENT|Extent of the search region of interest (geographic coordinates)||True
-##ParameterFile|GEOMETRY_SHP|Area of interest (geographic coordinates - WGS84)|False|True|shp
-##ParameterFile|GEOMETRY_GJ|Area of interest|False|True|geojson
+##ParameterFile|GEOMETRY_SHP|Area of interest .shp file (geographic coordinates - WGS84)|False|True|shp
+##ParameterFile|GEOMETRY_GJ|Area of interest .geojson file|False|True|geojson
 ##ParameterSelection|SENTINEL|Limit search to Sentinel satellite|any;1;2;3|0
 ##*ParameterSelection|INSTRUMENT|Limit search to specific instrument|any;MSI;SAR-CSAR;SLSTR;OLCI;SRAL|0
 ##*ParameterSelection|PRODUCTTYPE|Limit search to a Sentinel product type|any;SLC;GRD;OCN;RAW;S2MSI1C;S2MSI2Ap|0
-##*ParamterString|URL|DHuS URL|https://scihub.copernicus.eu/apihub/|False|True
-##*ParameterString|NAME|Select specific product(s) by filename. Supports wildcards.
-##*ParameterString|QUERY|Extra search keywords. Example: 'producttype=GRD,polarisationmode=HH'|False|True
-##*ParameterNumber|CLOUD|Maximum cloud cover in percent|0|100|100|True
-##*ParameterNumber|LIMIT|Maximum number of results to return
+##*ParameterString|URL|DHuS URL|https://scihub.copernicus.eu/apihub/|False|True
+##*ParameterString|NAME|Select specific product(s) by filename. Supports wildcards.||False|True
+##*ParameterString|QUERY|Extra search keywords. Example: 'producttype=GRD,polarisationmode=HH'||False|True
+##*ParameterNumber|CLOUD|Maximum cloud cover in percent|0|100|0|True
+##*ParameterNumber|LIMIT|Maximum number of results to return|0|1000|0|True
 ##ParameterBoolean|DOWNLOAD|Download all results of the query|False
 ##ParameterBoolean|FOOTPRINTS|Create geojson file search_footprints.geojson with footprints and metadata|False
 ##OutputDirectory|PATH|Set the path where the the files will be saved
@@ -109,6 +109,8 @@ def cli(user, password, geometry, start, end, name, download, sentinel, productt
     import geojson as gj
     from sentinelsat.sentinel import SentinelAPI, SentinelAPIError, geojson_to_wkt, read_geojson
 
+    returns = {}  # information to return
+
     api = SentinelAPI(user, password, url)
     api.show_progressbars = True  # TODO: override api._tqdm with QGIS pbar
 
@@ -156,8 +158,10 @@ def cli(user, password, geometry, start, end, name, download, sentinel, productt
 
     if footprints is True:
         footprints_geojson = api.to_geojson(products)
-        with open(os.path.join(path, "search_footprints.geojson"), "w") as outfile:
+        footprints_file = os.path.join(path, "search_footprints.geojson")
+        with open(footprints_file, "w") as outfile:
             outfile.write(gj.dumps(footprints_geojson))
+        returns['footprints_file'] = footprints_file
 
     if download is True:
         product_infos, failed_downloads = api.download_all(products, path)
@@ -177,7 +181,15 @@ def cli(user, password, geometry, start, end, name, download, sentinel, productt
             logger.info('%s scenes found with a total size of %.2f GB',
                         len(products), api.get_products_size(products))
 
+    return returns
+
 
 _set_logger_handler(_PROGRESS)
 logger.debug(kwargs)
-cli(**kwargs)
+returns = cli(**kwargs)
+
+footprints_file = returns.get('footprints_file', None)
+if footprints_file is not None:
+    from processing.tools import dataobjects
+    dataobjects.load(footprints_file, os.path.basename(footprints_file))
+
