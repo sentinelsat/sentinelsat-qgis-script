@@ -87,6 +87,29 @@ class ProgressHandler(logging.StreamHandler):
             pass  # no logging
 
 
+class ProgressBar(object):
+    # TODO: Implement QGIS progress bar
+
+    def __init__(self, *args, **kwargs):
+        self.value = 0.0
+
+    def update(self, increment):
+        self.value += increment
+
+
+class ProgressBarContext(object):
+
+    def __enter__(self, *args, **kwargs):
+        self.pbar = ProgressBar(*args, **kwargs)
+        return self.pbar
+
+    def __exit__(self, *args, **kwargs):
+        pass
+
+    def __close__(self, *args, **kwargs):
+        pass
+
+
 def _set_logger_handler(qgis_progress, level='INFO'):
     logger.setLevel(level)
     h = ProgressHandler(qgis_progress)
@@ -94,6 +117,12 @@ def _set_logger_handler(qgis_progress, level='INFO'):
     fmt = logging.Formatter('%(message)s')
     h.setFormatter(fmt)
     logger.addHandler(h)
+
+
+def _load_to_canvas(path):
+    if path is not None and os.path.isfile(path):
+        from processing.tools import dataobjects
+        dataobjects.load(path, os.path.basename(path))
 
 
 def cli(user, password, geometry, start, end, name, download, sentinel, producttype,
@@ -112,7 +141,7 @@ def cli(user, password, geometry, start, end, name, download, sentinel, productt
     returns = {}  # information to return
 
     api = SentinelAPI(user, password, url)
-    api.show_progressbars = True  # TODO: override api._tqdm with QGIS pbar
+    api._tqdm = ProgressBarContext()
 
     search_kwargs = {}
     if sentinel and not (producttype or instrument):
@@ -187,9 +216,4 @@ def cli(user, password, geometry, start, end, name, download, sentinel, productt
 _set_logger_handler(_PROGRESS)
 logger.debug(kwargs)
 returns = cli(**kwargs)
-
-footprints_file = returns.get('footprints_file', None)
-if footprints_file is not None:
-    from processing.tools import dataobjects
-    dataobjects.load(footprints_file, os.path.basename(footprints_file))
-
+_load_to_canvas(returns.get('footprints_file', None))
