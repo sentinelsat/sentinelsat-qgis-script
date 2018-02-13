@@ -90,23 +90,18 @@ class ProgressHandler(logging.StreamHandler):
 class ProgressBar(object):
     # TODO: Implement QGIS progress bar
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, total, *args, **kwargs):
         self.value = 0.0
+        self.qgis_progress = _PROGRESS
+        self.total = total
+        self.qgis_progress.setPercentage(0)
 
     def update(self, increment):
         self.value += increment
+        self.percent = float(self.value) / self.total * 100
+        self.qgis_progress.setPercentage(self.percent)
 
-
-class ProgressBarContext(object):
-
-    def __enter__(self, *args, **kwargs):
-        self.pbar = ProgressBar(*args, **kwargs)
-        return self.pbar
-
-    def __exit__(self, *args, **kwargs):
-        pass
-
-    def __close__(self, *args, **kwargs):
+    def close(self):
         pass
 
 
@@ -141,7 +136,7 @@ def cli(user, password, geometry, start, end, name, download, sentinel, productt
     returns = {}  # information to return
 
     api = SentinelAPI(user, password, url)
-    api._tqdm = ProgressBarContext()
+    api._tqdm = ProgressBar
 
     search_kwargs = {}
     if sentinel and not (producttype or instrument):
