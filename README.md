@@ -21,5 +21,5 @@ QGIS Python.
 
 ### Installing the script
 
-Simply place the `sentinelsat-qgis-script.py` into your `~/.qgis2/processing/scripts` 
+Simply place the `sentinelsat_qgis_script.py` into your `~/.qgis2/processing/scripts` 
 folder or anywhere below.
