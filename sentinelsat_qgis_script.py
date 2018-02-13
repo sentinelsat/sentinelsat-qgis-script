@@ -10,13 +10,14 @@
 ##ParameterFile|GEOMETRY_SHP|Area of interest .shp file (geographic coordinates - WGS84)|False|True|shp
 ##ParameterFile|GEOMETRY_GJ|Area of interest .geojson file|False|True|geojson
 ##ParameterSelection|SENTINEL|Limit search to Sentinel satellite|any;1;2;3|0
+##*ParameterNumber|CLOUD|Maximum cloud cover in percent|0|100|0|True
 ##*ParameterSelection|INSTRUMENT|Limit search to specific instrument|any;MSI;SAR-CSAR;SLSTR;OLCI;SRAL|0
 ##*ParameterSelection|PRODUCTTYPE|Limit search to a Sentinel product type|any;SLC;GRD;OCN;RAW;S2MSI1C;S2MSI2Ap|0
-##*ParameterString|URL|DHuS URL|https://scihub.copernicus.eu/apihub/|False|True
+##*ParameterString|UUID|Select specific products by (comma-separated) UUID(s)..||False|True
 ##*ParameterString|NAME|Select specific product(s) by filename. Supports wildcards.||False|True
 ##*ParameterString|QUERY|Extra search keywords. Example: 'producttype=GRD,polarisationmode=HH'||False|True
-##*ParameterNumber|CLOUD|Maximum cloud cover in percent|0|100|0|True
-##*ParameterNumber|LIMIT|Maximum number of results to return|0|1000|0|True
+##*ParameterString|URL|DHuS URL|https://scihub.copernicus.eu/apihub/|False|True
+##ParameterNumber|LIMIT|Maximum number of products|0|100000|0|True
 ##ParameterBoolean|DOWNLOAD|Download all results of the query|False
 ##ParameterBoolean|FOOTPRINTS|Create geojson file search_footprints.geojson with footprints and metadata|False
 ##OutputDirectory|PATH|Set the path where the the files will be saved
@@ -63,6 +64,7 @@ kwargs = dict(
     user=USER,
     password=PASSWORD,
     url=URL,
+    uuid=UUID or None,
     name=NAME or None,
     sentinel=[None, 1, 2, 3][SENTINEL],
     instrument=['MSI', 'SAR-C SAR', 'SLSTR', 'OLCI', 'SRAL'][INSTRUMENT],
@@ -127,10 +129,10 @@ def _load_to_canvas(path):
         dataobjects.load(path, os.path.basename(path))
 
 
-def cli(user, password, geometry, start, end, name, download, sentinel, producttype,
+def cli(user, password, geometry, start, end, uuid, name, download, sentinel, producttype,
         instrument, cloud, footprints, path, query, url, limit,
         area_wkt,
-        order_by=None, uuid=None):
+        order_by=None):
     """Search for Sentinel products and, optionally, download all the results
     and/or create a geojson file with the search result footprints.
     Beyond your Copernicus Open Access Hub user and password, you must pass a geojson file
