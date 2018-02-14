@@ -1,7 +1,7 @@
 #Definition of inputs and outputs
 #==================================
 ##Sentinel Download=group
-##Download Sentinel data=name
+##Download Sentinel=name
 ##ParameterString|USER|Username|
 ##ParameterString|PASSWORD|Password|
 ##ParameterString|START|Start date (YYYYMMDD)|NOW-1DAY|False|True
