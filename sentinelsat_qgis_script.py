@@ -6,7 +6,7 @@
 ##ParameterString|PASSWORD|Password|
 ##ParameterString|START|Start date (YYYYMMDD)|NOW-1DAY|False|True
 ##ParameterString|END|End date (YYYYMMDD)|NOW|False|True
-##ParameterSelection|SENTINEL|Sentinel satellite fleet|any;1;2;3|0
+##ParameterSelection|SENTINEL|Sentinel satellite constellation|any;1;2;3|0
 ##ParameterExtent|EXTENT|Area of interest extent (geographic coordinates)||True
 ##ParameterFile|GEOMETRY_SHP|Area of interest .shp file (geographic coordinates - WGS84)|False|True|shp
 ##ParameterFile|GEOMETRY_GJ|Area of interest .geojson file|False|True|geojson
