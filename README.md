@@ -1,6 +1,7 @@
 # sentinelsat_qgis_script
 QGIS thin interface to sentinelsat
 
+<img src="screenshot.png" alt="Screenshot" width="60%"/>
 
 ## Installation
 
