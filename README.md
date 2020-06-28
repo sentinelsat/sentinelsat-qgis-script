@@ -19,7 +19,10 @@ QGIS Python.
 
 ### Installing `sentinelsat` on Linux
 
-1. ???
+Install ``sentinelsat`` through pip:
+
+1. Start a bash shell
+1. Type ``pip install sentinelsat``
 
 
 ### Installing the script
